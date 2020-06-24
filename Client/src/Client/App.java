@@ -8,9 +8,10 @@ import java.io.IOException;
  */
 
 public class App {
-    static final int PORT = 2099;
+    private static Thread clientThread;
 
-    public static void main(String[] args) throws IOException {
-        Client client = new Client(PORT);
+    public static void main(String[] args)  {
+        clientThread = new Thread(new Client());
+        clientThread.start();
     }
 }

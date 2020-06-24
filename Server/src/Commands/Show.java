@@ -10,7 +10,7 @@ import java.util.Comparator;
  */
 public class Show implements Commandable {
     private final String name = "show";
-    String result;
+    String result = "";
 
     public Show() {
         Command.regist(name, this);

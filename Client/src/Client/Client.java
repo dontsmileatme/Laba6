@@ -14,31 +14,49 @@ import java.net.Socket;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-public class Client {
+public class Client implements Runnable{
     private static Socket socket;
     Connection connection = new Connection();
+    private static final int maxAttempts = 3;
+    private static final int msToReconnect = 3000;
+    private static int attempts = 0;
+    static final int PORT = 2099;
 
-    public Client(int port) {
+    @Override
+    public void run() {
         while (true) {
-            try (Socket s = new Socket("localhost", port)) {
+            try (Socket s = new Socket("localhost", PORT)) {
                 socket = s;
                 System.out.println("Подключение установлено.");
                 while (this.isConnected()) {
                     this.begin(socket);
                 }
             } catch (IOException e) {
-                System.err.println("Соеденение с сервером потеряно.");
-                System.exit(0);
+                tryToConnect();
             }
         }
     }
 
+    public void tryToConnect() {
+        System.err.println("Ошибка подключения к серверу.");
+        if (++attempts >= maxAttempts) {
+            System.err.println("Превышено количество попыток подключения. Всем пока. :)");
+            System.exit(0);
+        } else {
+            System.err.println("Повторое подключение будет совершено через " + msToReconnect / 1000 + " секунды.");
+            try {
+                Thread.sleep(msToReconnect);
+            } catch (InterruptedException interruptedException) {
+                interruptedException.printStackTrace();
+            }
+        }
+    }
 
     public boolean isConnected() {
         return (!socket.isClosed() && socket.isConnected());
     }
 
-    public void begin(Socket socket) {
+    public void begin(Socket socket) throws IOException {
         try {
             while (true) {
                 System.out.println("Введите команду: ");
@@ -57,7 +75,7 @@ public class Client {
                     } else begin(socket);
                 }
             }
-        } catch (NoSuchElementException | IOException | ClassNotFoundException e) {
+        } catch (NoSuchElementException e) {
             System.exit(0);
         }
     }
@@ -96,7 +114,7 @@ public class Client {
         return false;
     }
 
-    private boolean receive(Connection connection, Socket socket) throws ClassNotFoundException, IOException {
+    private boolean receive(Connection connection, Socket socket) {
         byte[] inputtedBytes;
         inputtedBytes = connection.read(socket);
         if (inputtedBytes == null) return true;

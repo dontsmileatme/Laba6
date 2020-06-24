@@ -10,7 +10,7 @@ import java.util.Comparator;
  */
 public class Print_field_descending_minutes_of_waiting implements Commandable {
     private final String name = "print_field_descending_minutes_of_waiting";
-    String result;
+    String result = "";
 
     public Print_field_descending_minutes_of_waiting() {
         Command.regist(name, this);
